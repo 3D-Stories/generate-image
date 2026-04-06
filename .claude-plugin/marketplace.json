@@ -1,0 +1,20 @@
+{
+  "name": "generate-image",
+  "description": "Claude Code plugin for generating images using AI models on Replicate.",
+  "owner": {
+    "name": "3D-Stories",
+    "url": "https://github.com/3D-Stories"
+  },
+  "plugins": [
+    {
+      "name": "generate-image",
+      "description": "Generate images using AI models on Replicate (Nano Banana 2, FLUX Schnell) with automatic background removal for transparent PNGs.",
+      "version": "1.0.0",
+      "source": "./",
+      "author": {
+        "name": "3D-Stories",
+        "url": "https://github.com/3D-Stories"
+      }
+    }
+  ]
+}
