@@ -1,0 +1,9 @@
+{
+  "name": "generate-image",
+  "version": "1.0.0",
+  "description": "Generate images using AI models on Replicate (Nano Banana 2, FLUX Schnell) with automatic background removal for transparent PNGs.",
+  "author": {
+    "name": "3D-Stories"
+  },
+  "keywords": ["image", "generate", "replicate", "ai", "illustration", "icon", "background-removal"]
+}
