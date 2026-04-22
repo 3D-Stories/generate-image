@@ -167,8 +167,12 @@ echo "${REPLICATE_API_TOKEN:+SET}" || echo "NOT_SET"
 2. Persist to shell profile (idempotent):
 
 ```bash
-PROFILE="$HOME/.bashrc"
-[ -f "$HOME/.zshrc" ] && PROFILE="$HOME/.zshrc"
+# Detect the user's actual shell profile
+if [[ "$SHELL" == */zsh ]]; then
+    PROFILE="$HOME/.zshrc"
+else
+    PROFILE="$HOME/.bashrc"
+fi
 
 if grep -q 'REPLICATE_API_TOKEN' "$PROFILE" 2>/dev/null; then
     sed -i.bak "s|^export REPLICATE_API_TOKEN=.*|export REPLICATE_API_TOKEN=\"TOKEN_HERE\"|" "$PROFILE"
