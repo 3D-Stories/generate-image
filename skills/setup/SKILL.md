@@ -89,6 +89,14 @@ After install, **verify** by re-running the checks from the top of this step. If
 
 ### npm/npx edge cases
 
+- **npx installed but "command not found" in MCP context** — this is the most common gotcha. Claude Code spawns MCP servers as child processes that may not inherit the user's full PATH (especially with nvm or non-standard installs). The fix is to use the **absolute path** to npx when registering:
+  ```bash
+  # Find where npx lives
+  which npx
+  # Use the full path in the MCP registration (Step 3)
+  claude mcp add -s user replicate -- /usr/local/bin/npx -y replicate-mcp@latest
+  ```
+  If the user installed Node via nvm, the path will be something like `~/.nvm/versions/node/v22.x.x/bin/npx` — use that instead.
 - **npx missing but npm present** — older npm version. Fix: `npm install -g npx`
 - **npm permission errors (EACCES)** — npm cache permissions. Fix:
   ```bash
@@ -102,18 +110,24 @@ Check if the MCP server is already registered:
 claude mcp list 2>&1 | grep -i replicate
 ```
 
+First, resolve the absolute path to npx (avoids PATH issues in MCP subprocess environments):
+```bash
+NPX_PATH=$(which npx)
+echo "npx is at: $NPX_PATH"
+```
+
 **If already registered but showing "Failed to connect":** likely a token issue or stale registration. Remove and re-add:
 ```bash
 claude mcp remove replicate
-claude mcp add -s user replicate -- npx -y replicate-mcp@latest
+claude mcp add -s user replicate -- "$NPX_PATH" -y replicate-mcp@latest
 ```
 
 **If not registered:**
 ```bash
-claude mcp add -s user replicate -- npx -y replicate-mcp@latest
+claude mcp add -s user replicate -- "$NPX_PATH" -y replicate-mcp@latest
 ```
 
-The `-s user` flag registers it globally (not per-project) so image generation works in any project.
+Using the absolute path (e.g., `/usr/local/bin/npx`) instead of bare `npx` prevents "command not found" errors in the MCP subprocess — the most commonly reported setup failure. The `-s user` flag registers it globally (not per-project) so image generation works in any project.
 
 After registration, verify:
 ```bash
@@ -200,8 +214,10 @@ If the user comes back with issues after setup:
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
+| "npx: command not found" in MCP but `npx` works in terminal | MCP subprocess doesn't inherit full PATH | Re-register with absolute path: `claude mcp add -s user replicate -- $(which npx) -y replicate-mcp@latest` |
 | "replicate: ... ✗ Failed to connect" | Token not set or expired | Check `echo $REPLICATE_API_TOKEN`, regenerate at replicate.com if needed |
-| MCP tools missing after restart | Registration didn't persist | Re-run `claude mcp add -s user replicate -- npx -y replicate-mcp@latest` |
+| MCP tools missing after restart | Registration didn't persist | Re-run with `-s user` flag and absolute npx path |
 | "401 Unauthorized" from Replicate | Bad or expired token | Generate a new token at replicate.com/account/api-tokens |
 | npx downloads packages every time | Normal for `npx -y` | First run is slow (~10s), subsequent runs use npm cache |
 | generate-image skill says "Replicate MCP not detected" | MCP registered but session not restarted | Restart Claude Code — MCP servers load at session start |
+| nvm-installed Node not found by MCP | nvm only loads in interactive shells | Use full path: `~/.nvm/versions/node/v22.x.x/bin/npx` in the registration command |
